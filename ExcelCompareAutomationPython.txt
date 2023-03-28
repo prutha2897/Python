@@ -1,0 +1,35 @@
+!pip install pandas
+!pip install plotly
+!pip install xlwings
+!pip install openpyxl
+import pandas as pd
+import plotly.express as px
+import xlwings as xw
+df_initial= pd.read_excel("",sheet_name="") 
+df_update= pd.read_excel("",sheet_name="")
+df_initial.shape
+df_update.shape
+df_update=df_update.reset_index()
+df_initial=df_initial.reset_index()
+df_initial.head(3)
+df_diff=pd.merge(df_initial,df_update,how="outer",indicator="Exist")
+df_diff.query("Exist!='both'")
+
+df_highlight=df_diff.query("Exist!='both'")
+df_highlight
+highlight_rows=df_highlight['level_0'].tolist()
+highlight_rows=[x+2 for x in highlight_rows]
+highlight_rows
+
+with xw.App(visible=False) as app:
+    updated_wb=app.books.open(updated_version)
+    updated_ws=updated_wb.sheets(1)
+    rng=updated_ws.used_range
+    
+    print(f"Used Range : {rng.address}")
+    
+    for row in rng.rows:
+        if row.row in hightlighted_rows:
+            row.color=(255,71,76)
+            
+updated_wb.save(path.cwd()/"difference.xlsx")
