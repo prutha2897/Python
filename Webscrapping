@@ -1,0 +1,33 @@
+!pip install BeautifulSoup4
+from bs4 import BeautifulSoup
+import requests
+result = requests.get("https://en.wikipedia.org/wiki/Mumbai_Indians")
+result
+content=result.text
+content
+soup = BeautifulSoup(content,"lxml")
+table=soup.find('table',class_="wikitable")
+import pandas as pd
+Indian_Premier_League = pd.read_html(str(table))[0]
+table=soup.find_all('table',class_="wikitable" )
+table
+q = pd.read_html(str(table))[1]
+q = pd.read_html(str(table))[2]
+Number=q['No.', 'Batters']
+Name=q['Name', 'Batters']
+nationality=q['Nationality', 'Batters']
+Birth_date=q['Birth date', 'Batters']          
+Batting_style=q['Batting style', 'Batters']        
+Bowling_style=q['Bowling style', 'Batters']
+Year_signed=q['Year signed', 'Batters']
+Notes=q['Notes', 'Batters']
+Numbers=[]
+for i in Number:
+    if len(i)==2 and i != '-' : 
+        
+        Numbers.append(i)            
+[int(x) for x in Numbers]   
+
+Current_squad = pd.DataFrame(list(zip(Numbers, Name,nationality,Birth_date,Batting_style,Bowling_style,Year_signed,Notes)),
+               columns =['Number','Name', 'Nationality','Birth_date','Batting_style','Bowling_style', 'Year_signed','Notes'])
+Current_squad.sort_values(by="Year_signed").head(25).sort_values(by="Year_signed",ascending=False)
