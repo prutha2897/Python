@@ -41,3 +41,85 @@ for feature in year_features:
         plt.show()
         
  
+ 
+ #discrete features
+ discrete_feature = [feature for feature in numerical_features
+if len(dataset[feature].unique())<25 and feature not in year_features + ['Id'] ]
+print(len(discrete_feature))
+discrete_feature
+
+for feature in discrete_feature:
+    
+        data=dataset.copy()
+        data.groupby(feature)['SalePrice'].median().plot.bar()
+       
+        plt.xlabel(feature)
+        plt.show()
+        
+#continous_feature
+continous_feature = [feature for feature in numerical_features
+if  feature not in year_features + ['Id']  + discrete_feature ]
+print(len(continous_feature))
+continous_feature
+
+for feature in continous_feature:
+    
+        data=dataset.copy()
+        data[feature].hist(bins=25)
+       
+        plt.xlabel(feature)
+        plt.show()
+        
+for feature in continous_feature:
+    
+        data=dataset.copy()
+        if 0 in data[feature].unique() :
+            pass
+        else :
+            data[feature]=np.log(data[feature])
+            data.boxplot(column=feature)
+       
+            plt.xlabel(feature)
+            plt.show()
+            
+#categorical features
+categorical_features=[feature for feature in dataset.columns if dataset[feature].dtype == 'O']
+print(len(categorical_features))
+categorical_features
+
+for feature in categorical_features:
+    
+        data=dataset.copy()
+        data.groupby(feature)['SalePrice'].median().plot.bar()
+       
+        plt.xlabel(feature)
+        plt.show()
+        
+feature_nan=[features for features in dataset.columns if dataset[features].isnull().sum()>1 and dataset.columns.dtype == 'O']
+
+def replace_cat_feature(dataset, feature_nan):
+    data= dataset.copy()
+    data[feature_nan]=data[feature_nan].fillna('Missing')
+    return data
+dataset=replace_cat_feature(dataset, feature_nan)
+
+feature_nan_num=[features for features in dataset.columns if dataset[features].isnull().sum()>1 and dataset.columns.dtype != 'O']
+
+for feature in feature_nan_num: 
+    median_value = dataset[feature].median()
+    dataset[feature + 'nan']=np.where(dataset[feature].isnull(),1,0)
+    dataset[feature].fillna(median_value,inplace=True)
+    
+dataset[feature_nan_num].isnull().sum()
+
+#Rare Categorical Features 
+for feature in categorical_features:
+    temp=dataset.groupby(feature)['SalePrice'].count()/len(dataset)
+    temp_df=temp[temp>0.01].index
+    dataset[feature]=np.where(dataset[feature].isin(temp_df),dataset[feature],'Rare_var')
+
+!pip install scikit-learn
+for feature in categorical_features:
+    labels_ordered=dataset.groupby([feature])['SalePrice'].mean().sort_values().index
+    labels_ordered={k:i for i,k in enumerate(labels_ordered,0)}
+    dataset[feature]=dataset[feature].map(labels_ordered)
